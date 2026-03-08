@@ -67,32 +67,31 @@ if uploaded_file is not None:
             st.bar_chart(df['analysis'].value_counts())
         
         with col2:
-            st.write("#### Sentiment Percentage")
-            sentiment_counts = df['analysis'].value_counts()
+            st.write("#### ☁️ Most Frequent Words in Reviews")
+            all_words = ' '.join([str(text) for text in df[col_name]])
+            wordcloud = WordCloud(width=600, height=300, background_color='white').generate(all_words)
             
-            # Create the Donut Chart using Matplotlib
-            fig, ax = plt.subplots()
-            ax.pie(sentiment_counts, labels=sentiment_counts.index, autopct='%1.1f%%', 
-                   startangle=140, pctdistance=0.85, colors=['#66b3ff','#99ff99','#ff9999'])
-            
-            # Add the center circle to make it a donut
-            centre_circle = plt.Circle((0,0), 0.70, fc='white')
-            fig.gca().add_artist(centre_circle)
-            
-            ax.axis('equal')  
-            st.pyplot(fig) # This displays the Donut Chart in the second column
+            fig_wc, ax_wc = plt.subplots(figsize=(8, 4))
+            ax_wc.imshow(wordcloud, interpolation='bilinear')
+            ax_wc.axis("off")
+            st.pyplot(fig_wc)
         
         st.divider()
         
-        # Word Cloud appears below the two charts
-        st.write("#### ☁️ Most Frequent Words in Reviews")
-        all_words = ' '.join([str(text) for text in df[col_name]])
-        wordcloud = WordCloud(width=600, height=300, background_color='white').generate(all_words)
+        st.write("#### Sentiment Percentage")
+        sentiment_counts = df['analysis'].value_counts()
         
-        fig_wc, ax_wc = plt.subplots(figsize=(8, 4))
-        ax_wc.imshow(wordcloud, interpolation='bilinear')
-        ax_wc.axis("off")
-        st.pyplot(fig_wc)
+        # Create the Donut Chart using Matplotlib
+        fig, ax = plt.subplots()
+        ax.pie(sentiment_counts, labels=sentiment_counts.index, autopct='%1.1f%%', 
+               startangle=140, pctdistance=0.85, colors=['#66b3ff','#99ff99','#ff9999'])
+        
+        # Add the center circle to make it a donut
+        centre_circle = plt.Circle((0,0), 0.70, fc='white')
+        fig.gca().add_artist(centre_circle)
+        
+        ax.axis('equal')  
+        st.pyplot(fig)
         
         st.divider()
         
