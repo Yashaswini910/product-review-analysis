@@ -109,10 +109,6 @@ if uploaded_file is not None:
         st.divider()
         col_sum1, col_sum2 = st.columns([1, 2])
         
-        with col1:
-            st.write("### 📝 Data Preview")
-            st.dataframe(df[[col_name, 'analysis', 'score']].head(10))
-        
         with col2:
             st.write("### 📋 Analysis Summary")
             total_reviews = len(df)
