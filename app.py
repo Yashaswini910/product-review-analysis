@@ -109,7 +109,7 @@ if uploaded_file is not None:
         st.divider()
         col_sum1, col_sum2 = st.columns([1, 2])
         
-        with col2:
+        with col1:
             st.write("### 📋 Analysis Summary")
             total_reviews = len(df)
             pos_count = len(df[df['analysis'] == 'Positive'])
