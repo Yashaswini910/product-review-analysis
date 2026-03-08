@@ -134,7 +134,7 @@ if uploaded_file is not None:
             - **Neutral:** {neu_count} 😐
             - **Negative:** {neg_count} 😡
             
-            **System Conclusion:** :{status_color}[{conclusion}]
+            ** Conclusion:** :{status_color}[{conclusion}]
             """)
     else:
         st.error("Error: Could not find a 'review' or 'text' column in your CSV file.")
