@@ -56,72 +56,49 @@ if uploaded_file is not None:
         df['score'] = df[col_name].apply(get_sentiment)
         df['analysis'] = df['score'].apply(lambda x: 'Positive' if x > 0 else ('Negative' if x < 0 else 'Neutral'))
         # --- Visualizations Section ---
-        st.write("### 📈 Sentiment Analytics Dashboard")
-        
-        # Create two columns for the charts
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.write("#### Sentiment Count")
-            # This generates the Bar Chart automatically
-            st.bar_chart(df['analysis'].value_counts())
-        
-        with col2:
-            st.write("#### ☁️ Most Frequent Words in Reviews")
-            all_words = ' '.join([str(text) for text in df[col_name]])
-            wordcloud = WordCloud(width=600, height=300, background_color='white').generate(all_words)
-            
-            fig_wc, ax_wc = plt.subplots(figsize=(8, 4))
-            ax_wc.imshow(wordcloud, interpolation='bilinear')
-            ax_wc.axis("off")
-            st.pyplot(fig_wc)
-        
-        st.divider()
-        
-        st.write("#### Sentiment Percentage")
-        sentiment_counts = df['analysis'].value_counts()
-        
-        # Create the Donut Chart using Matplotlib
-        fig, ax = plt.subplots()
-        ax.pie(sentiment_counts, labels=sentiment_counts.index, autopct='%1.1f%%', 
-               startangle=140, pctdistance=0.85, colors=['#66b3ff','#99ff99','#ff9999'])
-        
-        # Add the center circle to make it a donut
-        centre_circle = plt.Circle((0,0), 0.70, fc='white')
-        fig.gca().add_artist(centre_circle)
-        
-        ax.axis('equal')  
-        st.pyplot(fig)
-        
-        st.divider()
-        
-        # --- Analysis Summary Section ---
-        st.write("### 📋 Analysis Summary")
-        
-        # Calculate metrics
-        total_reviews = len(df)
-        positive_count = (df['analysis'] == 'Positive').sum()
-        negative_count = (df['analysis'] == 'Negative').sum()
-        neutral_count = (df['analysis'] == 'Neutral').sum()
-        avg_sentiment = df['score'].mean()
-        
-        # Display metrics in columns
-        metric_col1, metric_col2, metric_col3, metric_col4 = st.columns(4)
-        
-        with metric_col1:
-            st.metric("Total Reviews", total_reviews)
-        
-        with metric_col2:
-            st.metric("Positive Reviews", positive_count)
-        
-        with metric_col3:
-            st.metric("Negative Reviews", negative_count)
-        
-        with metric_col4:
-            st.metric("Neutral Reviews", neutral_count)
-        
-        # Display average sentiment score
-        st.metric("Average Sentiment Score", f"{avg_sentiment:.3f}")
+       # --- Visualizations Section ---
+st.write("### 📈 Sentiment Analytics Dashboard")
+
+# Create two columns
+col1, col2 = st.columns(2)
+
+with col1:
+    # Top of Column 1: Bar Chart
+    st.write("#### 📊 Total Sentiment Volume")
+    st.bar_chart(df['analysis'].value_counts())
+    
+    st.write("---") # Small divider
+    
+    # Bottom of Column 1: Word Cloud
+    st.write("#### ☁️ Most Frequent Words")
+    all_words = ' '.join([str(text) for text in df[col_name]])
+    wordcloud = WordCloud(width=500, height=300, background_color='white').generate(all_words)
+    
+    fig_wc, ax_wc = plt.subplots()
+    ax_wc.imshow(wordcloud, interpolation='bilinear')
+    ax_wc.axis("off")
+    st.pyplot(fig_wc)
+
+with col2:
+    # Adding empty space to "push" the donut chart to the middle
+    st.write("##") # Vertical spacer
+    st.write("##") 
+    
+    st.write("#### 🍩 Sentiment Share (%)")
+    sentiment_counts = df['analysis'].value_counts()
+    
+    # Create the Donut Chart
+    fig, ax = plt.subplots()
+    # Note: colors order matches the index of sentiment_counts (usually Pos, Neut, Neg)
+    ax.pie(sentiment_counts, labels=sentiment_counts.index, autopct='%1.1f%%', 
+           startangle=140, pctdistance=0.85, colors=['#66b3ff','#99ff99','#ff9999'])
+    
+    # Add the center circle
+    centre_circle = plt.Circle((0,0), 0.70, fc='white')
+    fig.gca().add_artist(centre_circle)
+    
+    ax.axis('equal')  
+    st.pyplot(fig)
         
         # Display sentiment distribution summary
         st.write("**Sentiment Distribution:**")
