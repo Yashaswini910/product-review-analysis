@@ -98,12 +98,33 @@ if uploaded_file is not None:
             
             ax.axis('equal')  
             st.pyplot(fig)
-        
-        # Display sentiment distribution summary
-        st.write("**Sentiment Distribution:**")
-        for sentiment in ['Positive', 'Negative', 'Neutral']:
-            count = (df['analysis'] == sentiment).sum()
-            percentage = (count / total_reviews) * 100
-            st.write(f"- {sentiment}: {count} reviews ({percentage:.1f}%)")
+            # --- SECTION 3: AUTOMATED SUMMARY ---
+            st.divider()
+            st.subheader("📋 Analysis Summary")
+    
+            total_reviews = len(df)
+            pos_count = len(df[df['analysis'] == 'Positive'])
+            neg_count = len(df[df['analysis'] == 'Negative'])
+            pos_percent = (pos_count / total_reviews) * 100
+    
+            # Dynamic Conclusion Logic
+            if pos_percent > 70:
+                conclusion = "The product is performing exceptionally well with high customer satisfaction."
+                color = "green"
+            elif pos_percent > 40:
+                conclusion = "The product has a mixed reception. There is room for improvement in specific areas."
+                color = "orange"
+            else:
+                conclusion = "The product is receiving significant negative feedback. Immediate attention is required."
+                color = "red"
+    
+            # Displaying the Summary
+            st.markdown(f"""
+            * **Total Reviews Processed:** {total_reviews}
+            * **Positive Feedback:** {pos_count} reviews ({pos_percent:.1f}%)
+            * **Negative Feedback:** {neg_count} reviews
+            
+            **Final Conclusion:** :{color}[{conclusion}]
+            """)
     else:
         st.error("Error: Could not find a 'review' or 'text' column in your CSV file.")
