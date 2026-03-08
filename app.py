@@ -58,15 +58,20 @@ if uploaded_file is not None:
         # --- Visualizations Section ---
         st.write("### 📈 Sentiment Analytics Dashboard")
         
+        # Create a fixed color mapping for consistency
+        color_map = {'Positive': '#2ecc71', 'Neutral': '#95a5a6', 'Negative': '#e74c3c'}
+        
         # Create two columns
         col1, col2 = st.columns(2)
         
         with col1:
             # Top of Column 1: Bar Chart
             st.write("#### 📊 Total Sentiment Volume")
-            st.bar_chart(df['analysis'].value_counts())
+            counts = df['analysis'].value_counts()
+            # We use a standard bar chart, but the counts are already calculated
+            st.bar_chart(counts)
             
-            st.write("---") # Small divider
+            st.write("---") 
             
             # Bottom of Column 1: Word Cloud
             st.write("#### ☁️ Most Frequent Words")
@@ -79,52 +84,61 @@ if uploaded_file is not None:
             st.pyplot(fig_wc)
         
         with col2:
-            # Adding empty space to "push" the donut chart to the middle
-            st.write("##") # Vertical spacer
-            st.write("##") 
+            # Vertical spacing to center the Donut Chart
+            st.write("##")
+            st.write("##")
             
             st.write("#### 🍩 Sentiment Share (%)")
             sentiment_counts = df['analysis'].value_counts()
             
-            # Create the Donut Chart
-            fig, ax = plt.subplots()
-            # Note: colors order matches the index of sentiment_counts (usually Pos, Neut, Neg)
-            ax.pie(sentiment_counts, labels=sentiment_counts.index, autopct='%1.1f%%', 
-                   startangle=140, pctdistance=0.85, colors=['#66b3ff','#99ff99','#ff9999'])
+            # Ensure colors match the labels in the pie chart
+            current_colors = [color_map[label] for label in sentiment_counts.index]
             
-            # Add the center circle
+            fig, ax = plt.subplots()
+            ax.pie(sentiment_counts, labels=sentiment_counts.index, autopct='%1.1f%%', 
+                   startangle=140, pctdistance=0.85, colors=current_colors)
+            
+            # Add the center circle to make it a donut
             centre_circle = plt.Circle((0,0), 0.70, fc='white')
             fig.gca().add_artist(centre_circle)
             
             ax.axis('equal')  
             st.pyplot(fig)
-            # --- SECTION 3: AUTOMATED SUMMARY ---
-            st.divider()
-            st.subheader("📋 Analysis Summary")
-    
+        
+        # --- SECTION 3: DATA PREVIEW & AUTOMATED SUMMARY ---
+        st.divider()
+        col_sum1, col_sum2 = st.columns([1, 2])
+        
+        with col1:
+            st.write("### 📝 Data Preview")
+            st.dataframe(df[[col_name, 'analysis', 'score']].head(10))
+        
+        with col2:
+            st.write("### 📋 Analysis Summary")
             total_reviews = len(df)
             pos_count = len(df[df['analysis'] == 'Positive'])
+            neu_count = len(df[df['analysis'] == 'Neutral'])
             neg_count = len(df[df['analysis'] == 'Negative'])
             pos_percent = (pos_count / total_reviews) * 100
-    
-            # Dynamic Conclusion Logic
+        
+            # Logic for the final recommendation
             if pos_percent > 70:
-                conclusion = "The product is performing exceptionally well with high customer satisfaction."
-                color = "green"
+                conclusion = "Excellent performance. The product has high market approval."
+                status_color = "green"
             elif pos_percent > 40:
-                conclusion = "The product has a mixed reception. There is room for improvement in specific areas."
-                color = "orange"
+                conclusion = "Average performance. Mixed reviews suggest specific areas need improvement."
+                status_color = "orange"
             else:
-                conclusion = "The product is receiving significant negative feedback. Immediate attention is required."
-                color = "red"
-    
-            # Displaying the Summary
+                conclusion = "Critical alert. High negative sentiment detected; review product quality immediately."
+                status_color = "red"
+        
             st.markdown(f"""
-            * **Total Reviews Processed:** {total_reviews}
-            * **Positive Feedback:** {pos_count} reviews ({pos_percent:.1f}%)
-            * **Negative Feedback:** {neg_count} reviews
+            - **Total Reviews:** {total_reviews}
+            - **Positive:** {pos_count} 😊
+            - **Neutral:** {neu_count} 😐
+            - **Negative:** {neg_count} 😡
             
-            **Final Conclusion:** :{color}[{conclusion}]
+            **System Conclusion:** :{status_color}[{conclusion}]
             """)
     else:
         st.error("Error: Could not find a 'review' or 'text' column in your CSV file.")
