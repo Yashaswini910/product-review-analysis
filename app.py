@@ -55,45 +55,44 @@ if uploaded_file is not None:
 
         df['score'] = df[col_name].apply(get_sentiment)
         df['analysis'] = df['score'].apply(lambda x: 'Positive' if x > 0 else ('Negative' if x < 0 else 'Neutral'))
-
-    # --- Visualizations Section ---
-st.write("### 📈 Sentiment Analytics Dashboard")
-
-# Create two columns for the charts
-col1, col2 = st.columns(2)
-
-with col1:
-    st.write("#### Sentiment Count")
-    # This generates the Bar Chart automatically
-    st.bar_chart(df['analysis'].value_counts())
-
-with col2:
-    st.write("#### Sentiment Percentage")
-    sentiment_counts = df['analysis'].value_counts()
-    
-    # Create the Donut Chart using Matplotlib
-    fig, ax = plt.subplots()
-    ax.pie(sentiment_counts, labels=sentiment_counts.index, autopct='%1.1f%%', 
-           startangle=140, pctdistance=0.85, colors=['#66b3ff','#99ff99','#ff9999'])
-    
-    # Add the center circle to make it a donut
-    centre_circle = plt.Circle((0,0), 0.70, fc='white')
-    fig.gca().add_artist(centre_circle)
-    
-    ax.axis('equal')  
-    st.pyplot(fig) # This displays the Donut Chart in the second column
-
-st.divider()
-
-# Word Cloud appears below the two charts
-st.write("#### ☁️ Most Frequent Words in Reviews")
-all_words = ' '.join([str(text) for text in df[col_name]])
-wordcloud = WordCloud(width=800, height=400, background_color='white').generate(all_words)
-
-fig_wc, ax_wc = plt.subplots(figsize=(10, 5))
-ax_wc.imshow(wordcloud, interpolation='bilinear')
-ax_wc.axis("off")
-st.pyplot(fig_wc)
+        # --- Visualizations Section ---
+        st.write("### 📈 Sentiment Analytics Dashboard")
+        
+        # Create two columns for the charts
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.write("#### Sentiment Count")
+            # This generates the Bar Chart automatically
+            st.bar_chart(df['analysis'].value_counts())
+        
+        with col2:
+            st.write("#### Sentiment Percentage")
+            sentiment_counts = df['analysis'].value_counts()
+            
+            # Create the Donut Chart using Matplotlib
+            fig, ax = plt.subplots()
+            ax.pie(sentiment_counts, labels=sentiment_counts.index, autopct='%1.1f%%', 
+                   startangle=140, pctdistance=0.85, colors=['#66b3ff','#99ff99','#ff9999'])
+            
+            # Add the center circle to make it a donut
+            centre_circle = plt.Circle((0,0), 0.70, fc='white')
+            fig.gca().add_artist(centre_circle)
+            
+            ax.axis('equal')  
+            st.pyplot(fig) # This displays the Donut Chart in the second column
+        
+        st.divider()
+        
+        # Word Cloud appears below the two charts
+        st.write("#### ☁️ Most Frequent Words in Reviews")
+        all_words = ' '.join([str(text) for text in df[col_name]])
+        wordcloud = WordCloud(width=800, height=400, background_color='white').generate(all_words)
+        
+        fig_wc, ax_wc = plt.subplots(figsize=(10, 5))
+        ax_wc.imshow(wordcloud, interpolation='bilinear')
+        ax_wc.axis("off")
+        st.pyplot(fig_wc)
     else:
-
         st.error("Error: Could not find a 'review' or 'text' column in your CSV file.")
+
