@@ -94,10 +94,10 @@ if uploaded_file is not None:
         ax_wc.axis("off")
         st.pyplot(fig_wc)
         
-st.divider()
+        st.divider()
         
         # --- Analysis Summary Section ---
-st.write("### 📋 Analysis Summary")
+        st.write("### 📋 Analysis Summary")
         
         # Calculate metrics
         total_reviews = len(df)
