@@ -105,36 +105,42 @@ if uploaded_file is not None:
             ax.axis('equal')  
             st.pyplot(fig)
         
-        # --- SECTION 3: DATA PREVIEW & AUTOMATED SUMMARY ---
+       # --- SECTION 3: DATA PREVIEW & AUTOMATED SUMMARY ---
         st.divider()
-        col_sum1, col_sum2 = st.columns([1, 2])
+        total_reviews = len(df)
         
-        with col1:
-            st.write("### 📋 Analysis Summary")
-            total_reviews = len(df)
-            pos_count = len(df[df['analysis'] == 'Positive'])
-            neu_count = len(df[df['analysis'] == 'Neutral'])
-            neg_count = len(df[df['analysis'] == 'Negative'])
-            pos_percent = (pos_count / total_reviews) * 100
-        
-            # Logic for the final recommendation
-            if pos_percent > 70:
-                conclusion = "Excellent performance. The product has high market approval."
-                status_color = "green"
-            elif pos_percent > 40:
-                conclusion = "Average performance. Mixed reviews suggest specific areas need improvement."
-                status_color = "orange"
-            else:
-                conclusion = "Critical alert. High negative sentiment detected; review product quality immediately."
-                status_color = "red"
-        
-            st.markdown(f"""
-            - **Total Reviews:** {total_reviews}
-            - **Positive:** {pos_count} 😊
-            - **Neutral:** {neu_count} 😐
-            - **Negative:** {neg_count} 😡
+        if total_reviews > 0:
+            col_sum1, col_sum2 = st.columns([1, 2])
             
-            **Conclusion:** :{status_color}[{conclusion}]
-            """)
-    else:
-        st.error("Error: Could not find a 'review' or 'text' column in your CSV file.")
+            with col_sum1:
+                st.write("### 📋 Analysis Summary")
+                pos_count = len(df[df['analysis'] == 'Positive'])
+                neu_count = len(df[df['analysis'] == 'Neutral'])
+                neg_count = len(df[df['analysis'] == 'Negative'])
+                pos_percent = (pos_count / total_reviews) * 100
+        
+                # Dynamic Recommendation Logic
+                if pos_percent > 70:
+                    conclusion, status_color = "Excellent performance.", "green"
+                elif pos_percent > 40:
+                    conclusion, status_color = "Average performance.", "orange"
+                else:
+                    conclusion, status_color = "Critical alert.", "red"
+        
+                st.markdown(f"**Overall Status:** :{status_color}[{conclusion}]")
+                st.metric("Positive Rate", f"{pos_percent:.1f}%")
+        
+            with col_sum2:
+                st.write("### 📄 Processed Data Preview")
+                st.dataframe(df.head(10), use_container_width=True)
+                
+                # Download Button
+                csv_data = df.to_csv(index=False).encode('utf-8')
+                st.download_button(
+                    label="📥 Download Analyzed Results",
+                    data=csv_data,
+                    file_name="sentiment_analysis_results.csv",
+                    mime="text/csv"
+                )
+        else:
+            st.warning("The uploaded file contains no data rows.")
