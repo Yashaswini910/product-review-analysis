@@ -105,7 +105,7 @@ if uploaded_file is not None:
             ax.axis('equal')  
             st.pyplot(fig)
         
-      with col_sum1:
+        with col_sum1:
             st.write("### 📊 Executive Summary")
             
             # Calculate averages
