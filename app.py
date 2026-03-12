@@ -105,47 +105,53 @@ if uploaded_file is not None:
             ax.axis('equal')  
             st.pyplot(fig)
         
-        with col_sum1:
-            st.write("### 📊 Executive Summary")
-            
-            # Calculate averages
-            avg_polarity = df['score'].mean()
-            # Subjectivity tells you if reviews are factual (0) or opinionated (1)
+        # --- SECTION 3: DATA PREVIEW & AUTOMATED SUMMARY ---
+        st.divider()
+        
+        if uploaded_file is not None and col_name in df.columns:
+            # 1. Calculate the extra metric (Subjectivity)
             df['subjectivity'] = df[col_name].apply(lambda x: TextBlob(str(x)).sentiment.subjectivity)
-            avg_sub = df['subjectivity'].mean()
-        
-            # Create Metrics for a "Professional Dashboard" look
-            m1, m2 = st.columns(2)
-            m1.metric("Avg. Polarity", f"{avg_polarity:.2f}")
-            m2.metric("Avg. Subjectivity", f"{avg_sub:.2f}")
-        
-            st.write("---")
-        
-            # Dynamic Interpretation
-            if avg_polarity > 0.2:
-                sentiment_label = "Positive"
-                advice = "Maintain current quality and leverage positive testimonials in marketing."
-            elif avg_polarity < -0.1:
-                sentiment_label = "Negative"
-                advice = "Urgent: Investigate common complaints in the 'Negative' filter to prevent churn."
-            else:
-                sentiment_label = "Neutral"
-                advice = "The audience is indifferent. Consider adding 'wow' factors to the product."
-        
-            st.markdown(f"**Overall Sentiment:** `{sentiment_label}`")
-            st.info(f"**Recommendation:** {advice}")
+            
+            # 2. Define the columns properly
+            col_sum1, col_sum2 = st.columns([1, 2])
+            
+            with col_sum1:
+                st.write("### 📋 Analysis Summary")
+                
+                total_reviews = len(df)
+                pos_count = len(df[df['analysis'] == 'Positive'])
+                avg_polarity = df['score'].mean()
+                avg_sub = df['subjectivity'].mean()
+                
+                # Display professional metrics
+                st.metric("Avg. Polarity", f"{avg_polarity:.2f}")
+                st.metric("Avg. Subjectivity", f"{avg_sub:.2f}")
+                
+                # Logic for the final recommendation
+                pos_percent = (pos_count / total_reviews) * 100
+                
+                if pos_percent > 70:
+                    conclusion, status_color = "Excellent performance.", "green"
+                elif pos_percent > 40:
+                    conclusion, status_color = "Average performance.", "orange"
+                else:
+                    conclusion, status_color = "Critical alert.", "red"
+                    
+                st.markdown(f"**Status:** :{status_color}[{conclusion}]")
+                st.write(f"Total processed: {total_reviews} reviews")
         
             with col_sum2:
-                st.write("### 📄 Processed Data Preview")
-                st.dataframe(df.head(10), use_container_width=True)
+                st.write("### 📄 Data Preview")
+                # Showing the top 10 rows of the results
+                st.dataframe(df[[col_name, 'score', 'analysis']].head(10), use_container_width=True)
                 
-                # Download Button
-                csv_data = df.to_csv(index=False).encode('utf-8')
+                # Download button for the project submission
+                csv = df.to_csv(index=False).encode('utf-8')
                 st.download_button(
-                    label="📥 Download Analyzed Results",
-                    data=csv_data,
-                    file_name="sentiment_analysis_results.csv",
-                    mime="text/csv"
+                    "📥 Download Full Report",
+                    data=csv,
+                    file_name="sentiment_report.csv",
+                    mime="text/csv",
                 )
 else:
     st.warning("The uploaded file contains no data rows.")
