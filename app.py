@@ -147,5 +147,5 @@ if uploaded_file is not None:
                     file_name="sentiment_analysis_results.csv",
                     mime="text/csv"
                 )
-        else:
-            st.warning("The uploaded file contains no data rows.")
+else:
+    st.warning("The uploaded file contains no data rows.")
