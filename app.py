@@ -106,34 +106,34 @@ if uploaded_file is not None:
             st.pyplot(fig)
         
       with col_sum1:
-    st.write("### 📊 Executive Summary")
-    
-    # Calculate averages
-    avg_polarity = df['score'].mean()
-    # Subjectivity tells you if reviews are factual (0) or opinionated (1)
-    df['subjectivity'] = df[col_name].apply(lambda x: TextBlob(str(x)).sentiment.subjectivity)
-    avg_sub = df['subjectivity'].mean()
-
-    # Create Metrics for a "Professional Dashboard" look
-    m1, m2 = st.columns(2)
-    m1.metric("Avg. Polarity", f"{avg_polarity:.2f}")
-    m2.metric("Avg. Subjectivity", f"{avg_sub:.2f}")
-
-    st.write("---")
-
-    # Dynamic Interpretation
-    if avg_polarity > 0.2:
-        sentiment_label = "Positive"
-        advice = "Maintain current quality and leverage positive testimonials in marketing."
-    elif avg_polarity < -0.1:
-        sentiment_label = "Negative"
-        advice = "Urgent: Investigate common complaints in the 'Negative' filter to prevent churn."
-    else:
-        sentiment_label = "Neutral"
-        advice = "The audience is indifferent. Consider adding 'wow' factors to the product."
-
-    st.markdown(f"**Overall Sentiment:** `{sentiment_label}`")
-    st.info(f"**Recommendation:** {advice}")
+            st.write("### 📊 Executive Summary")
+            
+            # Calculate averages
+            avg_polarity = df['score'].mean()
+            # Subjectivity tells you if reviews are factual (0) or opinionated (1)
+            df['subjectivity'] = df[col_name].apply(lambda x: TextBlob(str(x)).sentiment.subjectivity)
+            avg_sub = df['subjectivity'].mean()
+        
+            # Create Metrics for a "Professional Dashboard" look
+            m1, m2 = st.columns(2)
+            m1.metric("Avg. Polarity", f"{avg_polarity:.2f}")
+            m2.metric("Avg. Subjectivity", f"{avg_sub:.2f}")
+        
+            st.write("---")
+        
+            # Dynamic Interpretation
+            if avg_polarity > 0.2:
+                sentiment_label = "Positive"
+                advice = "Maintain current quality and leverage positive testimonials in marketing."
+            elif avg_polarity < -0.1:
+                sentiment_label = "Negative"
+                advice = "Urgent: Investigate common complaints in the 'Negative' filter to prevent churn."
+            else:
+                sentiment_label = "Neutral"
+                advice = "The audience is indifferent. Consider adding 'wow' factors to the product."
+        
+            st.markdown(f"**Overall Sentiment:** `{sentiment_label}`")
+            st.info(f"**Recommendation:** {advice}")
         
             with col_sum2:
                 st.write("### 📄 Processed Data Preview")
