@@ -105,53 +105,54 @@ if uploaded_file is not None:
             ax.axis('equal')  
             st.pyplot(fig)
         
-        # --- SECTION 3: DATA PREVIEW & AUTOMATED SUMMARY ---
+        # --- SECTION 3: PLAIN-ENGLISH SUMMARY ---
         st.divider()
         
-        if uploaded_file is not None and col_name in df.columns:
-            # 1. Calculate the extra metric (Subjectivity)
-            df['subjectivity'] = df[col_name].apply(lambda x: TextBlob(str(x)).sentiment.subjectivity)
-            
-            # 2. Define the columns properly
-            col_sum1, col_sum2 = st.columns([1, 2])
-            
-            with col_sum1:
-                st.write("### 📋 Analysis Summary")
-                
-                total_reviews = len(df)
-                pos_count = len(df[df['analysis'] == 'Positive'])
-                avg_polarity = df['score'].mean()
-                avg_sub = df['subjectivity'].mean()
-                
-                # Display professional metrics
-                st.metric("Avg. Polarity", f"{avg_polarity:.2f}")
-                st.metric("Avg. Subjectivity", f"{avg_sub:.2f}")
-                
-                # Logic for the final recommendation
-                pos_percent = (pos_count / total_reviews) * 100
-                
-                if pos_percent > 70:
-                    conclusion, status_color = "Excellent performance.", "green"
-                elif pos_percent > 40:
-                    conclusion, status_color = "Average performance.", "orange"
-                else:
-                    conclusion, status_color = "Critical alert.", "red"
-                    
-                st.markdown(f"**Status:** :{status_color}[{conclusion}]")
-                st.write(f"Total processed: {total_reviews} reviews")
+        st.write("### 📢 What does this analysis tell us?")
         
-            with col_sum2:
-                st.write("### 📄 Data Preview")
-                # Showing the top 10 rows of the results
-                st.dataframe(df[[col_name, 'score', 'analysis']].head(10), use_container_width=True)
-                
-                # Download button for the project submission
-                csv = df.to_csv(index=False).encode('utf-8')
-                st.download_button(
-                    "📥 Download Full Report",
-                    data=csv,
-                    file_name="sentiment_report.csv",
-                    mime="text/csv",
-                )
+        # Calculate basic counts
+        total_reviews = len(df)
+        pos_count = len(df['analysis'] == 'Positive').sum()
+        neu_count = len(df['analysis'] == 'Neutral').sum()
+        neg_count = len(df['analysis'] == 'Negative').sum()
+        
+        # Calculate percentages
+        pos_per = (pos_count / total_reviews) * 100
+        neg_per = (neg_count / total_reviews) * 100
+
+        # Create two display columns for the summary
+        col_sum1, col_sum2 = st.columns([1, 1])
+
+        with col_sum1:
+            st.info(f"**Quick Stats:**\n\n out of **{total_reviews}** people who left feedback:")
+            st.write(f"✅ **{pos_count}** users are happy with the product.")
+            st.write(f"😐 **{neu_count}** users feel the product is just 'okay'.")
+            st.write(f"❌ **{neg_count}** users had a bad experience.")
+
+        with col_sum2:
+            # Simple Logic for a Clear Conclusion
+            if pos_per > 70:
+                st.success("### 🌟 Overall Verdict: Highly Recommended")
+                st.write("Most customers love this product! The 'Word Cloud' on the left shows the positive features people are talking about.")
+            elif pos_per > 40:
+                st.warning("### ⚖️ Overall Verdict: Average / Mixed")
+                st.write("People have mixed feelings. While many are happy, there are enough complaints that you should check the 'Negative' reviews carefully.")
+            else:
+                st.error("### ⚠️ Overall Verdict: Needs Attention")
+                st.write("A large number of users are unhappy. Look at the most frequent words in the Word Cloud to see what is going wrong.")
+
+        # --- DATA PREVIEW & DOWNLOAD ---
+        st.write("---")
+        st.write("### 📄 View Analyzed Data")
+        st.dataframe(df[[col_name, 'analysis']].head(10), use_container_width=True)
+        
+        # Simple Download Label
+        csv = df.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            label="📥 Save these results as an Excel/CSV file",
+            data=csv,
+            file_name="product_analysis_summary.csv",
+            mime="text/csv",
+        )
 else:
     st.warning("The uploaded file contains no data rows.")
