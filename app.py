@@ -107,51 +107,51 @@ if uploaded_file is not None:
         
         # --- SECTION 3: PLAIN-ENGLISH SUMMARY ---
         st.divider()
-        
         st.write("### 📢 What does this analysis tell us?")
         
-        # Calculate basic counts
+        # Calculate basic counts correctly
         total_reviews = len(df)
-        pos_count = len(df['analysis'] == 'Positive').sum()
-        neu_count = len(df['analysis'] == 'Neutral').sum()
-        neg_count = len(df['analysis'] == 'Negative').sum()
+        # We count how many rows match each category
+        pos_count = len(df[df['analysis'] == 'Positive'])
+        neu_count = len(df[df['analysis'] == 'Neutral'])
+        neg_count = len(df[df['analysis'] == 'Negative'])
         
-        # Calculate percentages
-        pos_per = (pos_count / total_reviews) * 100
-        neg_per = (neg_count / total_reviews) * 100
+        # Calculate percentages for the logic
+        pos_per = (pos_count / total_reviews) * 100 if total_reviews > 0 else 0
 
         # Create two display columns for the summary
         col_sum1, col_sum2 = st.columns([1, 1])
 
         with col_sum1:
-            st.info(f"**Quick Stats:**\n\n out of **{total_reviews}** people who left feedback:")
-            st.write(f"✅ **{pos_count}** users are happy with the product.")
-            st.write(f"😐 **{neu_count}** users feel the product is just 'okay'.")
-            st.write(f"❌ **{neg_count}** users had a bad experience.")
+            st.info(f"**Quick Stats**")
+            st.write(f"Out of **{total_reviews}** total reviews:")
+            st.write(f"✅ **{pos_count}** customers are happy.")
+            st.write(f"😐 **{neu_count}** customers feel it is okay.")
+            st.write(f"❌ **{neg_count}** customers are unhappy.")
 
         with col_sum2:
-            # Simple Logic for a Clear Conclusion
+            # Simple Verdict Logic
             if pos_per > 70:
-                st.success("### 🌟 Overall Verdict: Highly Recommended")
-                st.write("Most customers love this product! The 'Word Cloud' on the left shows the positive features people are talking about.")
+                st.success("### 🌟 Overall Verdict: Great!")
+                st.write("Most people love this. The Word Cloud shows the specific features they like.")
             elif pos_per > 40:
-                st.warning("### ⚖️ Overall Verdict: Average / Mixed")
-                st.write("People have mixed feelings. While many are happy, there are enough complaints that you should check the 'Negative' reviews carefully.")
+                st.warning("### ⚖️ Overall Verdict: Mixed")
+                st.write("Results are okay, but there are enough complaints to justify a closer look.")
             else:
-                st.error("### ⚠️ Overall Verdict: Needs Attention")
-                st.write("A large number of users are unhappy. Look at the most frequent words in the Word Cloud to see what is going wrong.")
+                st.error("### ⚠️ Overall Verdict: Poor")
+                st.write("Many users are unhappy. Check the Word Cloud to see common complaints.")
 
         # --- DATA PREVIEW & DOWNLOAD ---
         st.write("---")
         st.write("### 📄 View Analyzed Data")
+        # Just show the review and our simple 'Positive/Neutral/Negative' label
         st.dataframe(df[[col_name, 'analysis']].head(10), use_container_width=True)
         
-        # Simple Download Label
         csv = df.to_csv(index=False).encode('utf-8')
         st.download_button(
-            label="📥 Save these results as an Excel/CSV file",
+            label="📥 Download this report",
             data=csv,
-            file_name="product_analysis_summary.csv",
+            file_name="analysis_report.csv",
             mime="text/csv",
         )
 else:
