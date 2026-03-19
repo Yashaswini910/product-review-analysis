@@ -4,155 +4,133 @@ from textblob import TextBlob
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 
-# --- PAGE CONFIG ---
-st.set_page_config(page_title="Product Review Analyzer", layout="wide")
-
-st.title("📊 Product Review Sentiment Analyzer")
-st.markdown("Analyze customer feedback instantly using Natural Language Processing.")
-
-# --- SIDEBAR ---
-st.sidebar.header("Instructions")
-st.sidebar.info("Upload a CSV file with a column named 'review' or 'text' to see the dashboard.")
-
-# --- OPTION 1: SINGLE REVIEW ANALYSIS ---
-st.subheader("🔍 Analyze a Single Review")
-user_input = st.text_area("Enter a product review here:")
-
-if st.button("Analyze Sentiment"):
-    if user_input:
-        blob = TextBlob(user_input)
-        sentiment_score = blob.sentiment.polarity
-        
-        if sentiment_score > 0:
-            st.success(f"Positive Sentiment (Score: {sentiment_score:.2f}) 😊")
-        elif sentiment_score < 0:
-            st.error(f"Negative Sentiment (Score: {sentiment_score:.2f}) 😡")
-        else:
-            st.warning(f"Neutral Sentiment (Score: {sentiment_score:.2f}) 😐")
+# --- HELPER FUNCTIONS ---
+def get_sentiment_label(score):
+    if score > 0:
+        return 'Positive'
+    elif score < 0:
+        return 'Negative'
     else:
-        st.write("Please enter some text first.")
+        return 'Neutral'
 
-st.divider()
+def main():
+    # --- PAGE CONFIG ---
+    st.set_page_config(page_title="Product Review Analyzer", layout="wide")
 
-# --- OPTION 2: BULK FILE UPLOAD ---
-st.subheader("📂 Bulk Analysis via CSV Upload")
-uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+    st.title("📊 Product Review Sentiment Analyzer")
+    st.markdown("Analyze customer feedback instantly using Natural Language Processing.")
 
-if uploaded_file is not None:
-    df = pd.read_csv(uploaded_file)
-    
-    # Try to find the correct column automatically
-    col_name = None
-    for possible_col in ['review', 'text', 'content', 'comment']:
-        if possible_col in df.columns:
-            col_name = possible_col
-            break;
-            
-    if col_name:
-        # Perform Sentiment Analysis
-        def get_sentiment(text):
-            return TextBlob(str(text)).sentiment.polarity
+    # --- SIDEBAR ---
+    st.sidebar.header("Instructions")
+    st.sidebar.info("Upload a CSV file with a column named 'review' or 'text' to see the dashboard.")
 
-        df['score'] = df[col_name].apply(get_sentiment)
-        df['analysis'] = df['score'].apply(lambda x: 'Positive' if x > 0 else ('Negative' if x < 0 else 'Neutral'))
-        # --- Visualizations Section ---
-        st.write("### 📈 Sentiment Analytics Dashboard")
-        
-        # Create a fixed color mapping for consistency
-        color_map = {'Positive': '#2ecc71', 'Neutral': '#95a5a6', 'Negative': '#e74c3c'}
-        
-        # Create two columns
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            # Top of Column 1: Bar Chart
-            st.write("#### 📊 Total Sentiment Volume")
-            counts = df['analysis'].value_counts()
-            # We use a standard bar chart, but the counts are already calculated
-            st.bar_chart(counts)
-            
-            st.write("---") 
-            
-            # Bottom of Column 1: Word Cloud
-            st.write("#### ☁️ Most Frequent Words")
-            all_words = ' '.join([str(text) for text in df[col_name]])
-            wordcloud = WordCloud(width=500, height=300, background_color='white').generate(all_words)
-            
-            fig_wc, ax_wc = plt.subplots()
-            ax_wc.imshow(wordcloud, interpolation='bilinear')
-            ax_wc.axis("off")
-            st.pyplot(fig_wc)
-        
-        with col2:
-            # Vertical spacing to center the Donut Chart
-            st.write("##")
-            st.write("##")
-            
-            st.write("#### 🍩 Sentiment Share (%)")
-            sentiment_counts = df['analysis'].value_counts()
-            
-            # Ensure colors match the labels in the pie chart
-            current_colors = [color_map[label] for label in sentiment_counts.index]
-            
-            fig, ax = plt.subplots()
-            ax.pie(sentiment_counts, labels=sentiment_counts.index, autopct='%1.1f%%', 
-                   startangle=140, pctdistance=0.85, colors=current_colors)
-            
-            # Add the center circle to make it a donut
-            centre_circle = plt.Circle((0,0), 0.70, fc='white')
-            fig.gca().add_artist(centre_circle)
-            
-            ax.axis('equal')  
-            st.pyplot(fig)
-        
-        # --- SECTION 3: PLAIN-ENGLISH SUMMARY ---
-        st.divider()
-        st.write("### 📢 What does this analysis tell us?")
-        
-        # Calculate basic counts correctly
-        total_reviews = len(df)
-        # We count how many rows match each category
-        pos_count = len(df[df['analysis'] == 'Positive'])
-        neu_count = len(df[df['analysis'] == 'Neutral'])
-        neg_count = len(df[df['analysis'] == 'Negative'])
-        
-        # Calculate percentages for the logic
-        pos_per = (pos_count / total_reviews) * 100 if total_reviews > 0 else 0
+    # --- SINGLE REVIEW ANALYSIS ---
+    st.subheader("🔍 Analyze a Single Review")
+    user_input = st.text_area("Enter a product review here:", key="single_input")
 
-        # Create two display columns for the summary
-        col_sum1, col_sum2 = st.columns([1, 1])
-
-        with col_sum1:
-            st.info(f"**Quick Stats**")
-            st.write(f"Out of **{total_reviews}** total reviews:")
-            st.write(f"✅ **{pos_count}** customers are happy.")
-            st.write(f"😐 **{neu_count}** customers feel it is okay.")
-            st.write(f"❌ **{neg_count}** customers are unhappy.")
-
-        with col_sum2:
-            # Simple Verdict Logic
-            if pos_per > 70:
-                st.success("### 🌟 Overall Verdict: Great!")
-                st.write("Most people love this. The Word Cloud shows the specific features they like.")
-            elif pos_per > 40:
-                st.warning("### ⚖️ Overall Verdict: Mixed")
-                st.write("Results are okay, but there are enough complaints to justify a closer look.")
+    if st.button("Analyze Sentiment"):
+        if user_input:
+            blob = TextBlob(user_input)
+            score = blob.sentiment.polarity
+            label = get_sentiment_label(score)
+            
+            if label == 'Positive':
+                st.success(f"Positive Sentiment (Score: {score:.2f}) 😊")
+            elif label == 'Negative':
+                st.error(f"Negative Sentiment (Score: {score:.2f}) 😡")
             else:
-                st.error("### ⚠️ Overall Verdict: Poor")
-                st.write("Many users are unhappy. Check the Word Cloud to see common complaints.")
+                st.warning(f"Neutral Sentiment (Score: {score:.2f}) 😐")
+        else:
+            st.write("Please enter some text first.")
 
-        # --- DATA PREVIEW & DOWNLOAD ---
-        st.write("---")
-        st.write("### 📄 View Analyzed Data")
-        # Just show the review and our simple 'Positive/Neutral/Negative' label
-        st.dataframe(df[[col_name, 'analysis']].head(10), use_container_width=True)
+    st.divider()
+
+    # --- BULK FILE UPLOAD ---
+    st.subheader("📂 Bulk Analysis via CSV Upload")
+    uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+
+    if uploaded_file is not None:
+        df = pd.read_csv(uploaded_file)
         
-        csv = df.to_csv(index=False).encode('utf-8')
-        st.download_button(
-            label="📥 Download this report",
-            data=csv,
-            file_name="analysis_report.csv",
-            mime="text/csv",
-        )
-else:
-    st.warning("The uploaded file contains no data rows.")
+        if df.empty:
+            st.error("The uploaded file is empty.")
+            return
+
+        # Find the correct column
+        col_name = next((c for c in ['review', 'text', 'content', 'comment'] if c in df.columns), None)
+
+        if col_name:
+            # Processing
+            df['score'] = df[col_name].apply(lambda x: TextBlob(str(x)).sentiment.polarity)
+            df['analysis'] = df['score'].apply(get_sentiment_label)
+
+            # --- VISUALIZATIONS ---
+            st.write("### 📈 Sentiment Analytics Dashboard")
+            color_map = {'Positive': '#2ecc71', 'Neutral': '#95a5a6', 'Negative': '#e74c3c'}
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.write("#### 📊 Total Sentiment Volume")
+                st.bar_chart(df['analysis'].value_counts())
+                
+                st.write("---")
+                
+                st.write("#### ☁️ Most Frequent Words")
+                all_words = ' '.join([str(text) for text in df[col_name]])
+                wordcloud = WordCloud(width=500, height=300, background_color='white').generate(all_words)
+                fig_wc, ax_wc = plt.subplots()
+                ax_wc.imshow(wordcloud, interpolation='bilinear')
+                ax_wc.axis("off")
+                st.pyplot(fig_wc)
+
+            with col2:
+                st.write("##") # Vertical spacing
+                st.write("#### 🍩 Sentiment Share (%)")
+                counts = df['analysis'].value_counts()
+                current_colors = [color_map[label] for label in counts.index]
+                
+                fig, ax = plt.subplots()
+                ax.pie(counts, labels=counts.index, autopct='%1.1f%%', startangle=140, pctdistance=0.85, colors=current_colors)
+                fig.gca().add_artist(plt.Circle((0,0), 0.70, fc='white')) # Donut hole
+                ax.axis('equal')
+                st.pyplot(fig)
+
+            # --- SUMMARY SECTION ---
+            st.divider()
+            st.write("### 📢 What does this analysis tell us?")
+            
+            total = len(df)
+            pos_c = len(df[df['analysis'] == 'Positive'])
+            neu_c = len(df[df['analysis'] == 'Neutral'])
+            neg_c = len(df[df['analysis'] == 'Negative'])
+            pos_p = (pos_c / total) * 100 if total > 0 else 0
+
+            s_col1, s_col2 = st.columns(2)
+            with s_col1:
+                st.info("**Quick Stats**")
+                st.write(f"Out of **{total}** reviews: \n- Happy: {pos_c} \n- Neutral: {neu_c} \n- Unhappy: {neg_c}")
+
+            with s_col2:
+                if pos_p > 70:
+                    st.success("### 🌟 Overall Verdict: Great!")
+                    st.write("Customers are highly satisfied. Keep doing what you are doing!")
+                elif pos_p > 40:
+                    st.warning("### ⚖️ Overall Verdict: Mixed")
+                    st.write("Results are okay, but there's room for improvement.")
+                else:
+                    st.error("### ⚠️ Overall Verdict: Poor")
+                    st.write("High dissatisfaction detected. Investigation required.")
+
+            # --- DATA PREVIEW ---
+            st.write("---")
+            st.dataframe(df[[col_name, 'analysis']].head(10), use_container_width=True)
+            
+            csv = df.to_csv(index=False).encode('utf-8')
+            st.download_button("📥 Download Analysis Report", data=csv, file_name="report.csv", mime="text/csv")
+        else:
+            st.error("Could not find a 'review' or 'text' column.")
+
+# --- RUN THE APP ---
+if __name__ == "__main__":
+    main()
