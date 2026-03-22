@@ -51,25 +51,26 @@ def main():
 
     if uploaded_file is not None:
         
+        # --- ROBUST LOADING FOR DATASETS WITHOUT HEADERS ---
         try:
-            df = pd.read_csv(uploaded_file, encoding='utf-8')
-        except UnicodeDecodeError:
-            df = pd.read_csv(uploaded_file, encoding='ISO-8859-1')
+            # We use header=None to tell Pandas the first row is actual data
+            df = pd.read_csv(uploaded_file, sep=None, engine='python', encoding='utf-8', header=None)
+        except Exception:
+            uploaded_file.seek(0)
+            df = pd.read_csv(uploaded_file, sep=None, engine='python', encoding='ISO-8859-1', header=None)
+        
+        # Give the columns simple names like "Column 0", "Column 1" etc.
+        df.columns = [f"Column {i}" for i in range(len(df.columns))]
         
         if df.empty:
             st.error("The uploaded file is empty.")
             return
 
         st.write("### ⚙️ Settings")
-        default_options = ['review', 'text', 'content', 'comment', 'Feedback', 'Message']
-        # Try to find a match, otherwise default to the first column in the file
-        found_col = next((c for c in default_options if c in df.columns), df.columns[0])
-                
-        col_name = st.selectbox(
-        "Which column contains the reviews?", 
-        options=df.columns, 
-        index=list(df.columns).index(found_col)
-        )
+        st.info("Your file doesn't seem to have headers. Please select which column contains the review text:")
+        
+        # The user can now pick "Column 0", "Column 1", etc.
+        col_name = st.selectbox("Select the Review Column:", options=df.columns)
             
                
 
