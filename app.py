@@ -22,7 +22,7 @@ def main():
 
     # --- SIDEBAR ---
     st.sidebar.header("Instructions")
-    st.sidebar.info("Upload a CSV file with a column named 'review' or 'text' to see the dashboard.")
+    st.sidebar.info("Upload a CSV file with a column named 'Review' or 'Text' to see the dashboard.")
 
     # --- SINGLE REVIEW ANALYSIS ---
     st.subheader("🔍 Analyze a Single Review")
@@ -61,7 +61,7 @@ def main():
             return
 
         # Find the correct column
-        col_name = next((c for c in ['review', 'text', 'content', 'comment'] if c in df.columns), None)
+        col_name = next((c for c in ['Review', 'Text', 'Content', 'Comment'] if c in df.columns), None)
 
         if col_name:
             # Processing
