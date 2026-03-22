@@ -51,23 +51,27 @@ def main():
 
     if uploaded_file is not None:
         
-        # --- ROBUST LOADING FOR DATASETS WITHOUT HEADERS ---
+      # --- AUTO-DETECTION LOGIC (No Headers) ---
         try:
-            # We use header=None to tell Pandas the first row is actual data
-            df = pd.read_csv(uploaded_file, sep=None, engine='python', encoding='utf-8', header=None)
+            df = pd.read_csv(uploaded_file, sep=None, engine='python', header=None)
         except Exception:
             uploaded_file.seek(0)
             df = pd.read_csv(uploaded_file, sep=None, engine='python', encoding='ISO-8859-1', header=None)
         
-        # Give the columns simple names like "Column 0", "Column 1" etc.
-        df.columns = [f"Column {i}" for i in range(len(df.columns))]
+        # 1. Create temporary column names (Column 0, Column 1, etc.)
+        df.columns = [f"Col_{i}" for i in range(len(df.columns))]
         
-        if df.empty:
-            st.error("The uploaded file is empty.")
-            return
-
-        # Find the correct column
-        col_name = next((c for c in ['Review', 'text', 'content', 'comment'] if c in df.columns), None)
+        # 2. Smart Detection: Find the column with the longest average text length
+        def get_avg_length(col):
+            # Convert to string and measure length, ignoring empty cells
+            return df[col].astype(str).str.len().mean()
+        
+        # Identify the "Winner" (the column most likely to be the review)
+        best_col = max(df.columns, key=get_avg_length)
+        
+        # Use this column for the rest of the app
+        col_name = best_col
+        st.write(f"✨ **Smart Detection:** Analyzing reviews in `{col_name}` (Detected as the main text column).")
             
                
 
