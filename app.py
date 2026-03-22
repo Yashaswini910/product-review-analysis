@@ -59,9 +59,18 @@ def main():
         if df.empty:
             st.error("The uploaded file is empty.")
             return
+            st.write("### ⚙️ Settings")
+            default_options = ['review', 'text', 'content', 'comment', 'Feedback', 'Message']
+            # Try to find a match, otherwise default to the first column in the file
+            found_col = next((c for c in default_options if c in df.columns), df.columns[0])
+            
+            col_name = st.selectbox(
+                "Which column contains the reviews?", 
+                options=df.columns, 
+                index=list(df.columns).index(found_col)
+            )
 
-        # Find the correct column
-        col_name = next((c for c in ['Review', 'Text', 'Content', 'Comment'] if c in df.columns), None)
+               
 
         if col_name:
             # Processing
