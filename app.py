@@ -12,11 +12,6 @@ def get_sentiment_label(score):
         return 'Negative'
     else:
         return 'Neutral'
-@st.cache_data
-def process_data(df, col_index):
-    df['score'] = df[col_index].apply(lambda x: TextBlob(str(x)).sentiment.polarity)
-    df['analysis'] = df['score'].apply(get_sentiment_label)
-    return df
 
 def main():
     # --- PAGE CONFIG ---
@@ -71,11 +66,8 @@ def main():
             st.error("The uploaded file is empty.")
             return
 
-        st.write("### ⚙️ Settings")
-        st.info("Your file doesn't seem to have headers. Please select which column contains the review text:")
-        
-        # The user can now pick "Column 0", "Column 1", etc.
-        col_name = st.selectbox("Select the Review Column:", options=df.columns)
+        # Find the correct column
+        col_name = next((c for c in ['Review', 'text', 'content', 'comment'] if c in df.columns), None)
             
                
 
