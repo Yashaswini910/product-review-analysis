@@ -58,21 +58,23 @@ def main():
             uploaded_file.seek(0)
             df = pd.read_csv(uploaded_file, sep=None, engine='python', encoding='ISO-8859-1', header=None)
         
-        # 1. Create temporary column names (Column 0, Column 1, etc.)
-        df.columns = [f"Col_{i}" for i in range(len(df.columns))]
+        # 1. Look at the very first row (index 0)
+        first_row = df.iloc[0].astype(str).tolist()
         
-        # 2. Smart Detection: Find the column with the longest average text length
-        def get_avg_length(col):
-            # Convert to string and measure length, ignoring empty cells
-            return df[col].astype(str).str.len().mean()
+        # 2. Search for the keyword "Review" (case-insensitive)
+        target_col_index = None
+        for i, cell_value in enumerate(first_row):
+            if "review" in cell_value.lower():
+                target_col_index = i
+                break
         
-        # Identify the "Winner" (the column most likely to be the review)
-        best_col = max(df.columns, key=get_avg_length)
-        
-        # Use this column for the rest of the app
-        col_name = best_col
-        st.write(f"✨ **Smart Detection:** Analyzing reviews in `{col_name}` (Detected as the main text column).")
-            
+        # 3. If found, use that column. If not, fallback to the longest text column.
+        if target_col_index is not None:
+            col_name = f"Col_{target_col_index}"
+            df.columns = [f"Col_{i}" for i in range(len(df.columns))]
+            # Optional: Remove the first row if it was just the label "Review"
+            df = df.drop(index=0).reset_index(drop=True)
+            st.success(f"✅ Found '{first_row[target_col_index]}' label in Column {target_col_index}")
                
 
         if col_name:
