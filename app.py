@@ -12,6 +12,11 @@ def get_sentiment_label(score):
         return 'Negative'
     else:
         return 'Neutral'
+@st.cache_data
+def process_data(df, col_index):
+    df['score'] = df[col_index].apply(lambda x: TextBlob(str(x)).sentiment.polarity)
+    df['analysis'] = df['score'].apply(get_sentiment_label)
+    return df
 
 def main():
     # --- PAGE CONFIG ---
