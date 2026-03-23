@@ -52,12 +52,14 @@ def main():
     if uploaded_file is not None:
         
       # --- AUTO-DETECTION LOGIC (No Headers) ---
+        # --- SMART HEADER SCANNER ---
         try:
-            df = pd.read_csv(uploaded_file, sep=None, engine='python', header=None)
+            # Load with no header initially to scan the first row
+            df = pd.read_csv(uploaded_file, sep=None, engine='python', encoding='utf-8', header=None)
         except Exception:
             uploaded_file.seek(0)
             df = pd.read_csv(uploaded_file, sep=None, engine='python', encoding='ISO-8859-1', header=None)
-        
+
         # 1. Look at the very first row (index 0)
         first_row = df.iloc[0].astype(str).tolist()
         
@@ -75,7 +77,11 @@ def main():
             # Optional: Remove the first row if it was just the label "Review"
             df = df.drop(index=0).reset_index(drop=True)
             st.success(f"✅ Found '{first_row[target_col_index]}' label in Column {target_col_index}")
-               
+        else:
+            # Fallback: Find the column with the longest average text
+            df.columns = [f"Col_{i}" for i in range(len(df.columns))]
+            col_name = max(df.columns, key=lambda c: df[c].astype(str).str.len().mean())
+            st.info(f"🔍 'Review' label not found in first row. Auto-detected `{col_name}` as the main text.")
 
         if col_name:
             # Processing
