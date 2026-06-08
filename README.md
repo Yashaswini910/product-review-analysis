@@ -55,8 +55,11 @@ Review
 
 
 product-review-analysis/
+
 ├── app.py               # Main Streamlit application
+
 ├── requirements.txt     # Python dependencies
+
 └── .devcontainer/       # Dev container configuration
 
 
